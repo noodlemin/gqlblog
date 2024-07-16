@@ -1,4 +1,4 @@
-import { GraphQLClient, gql } from 'graphql-request';
+import { GraphQLClient, gql, request } from 'graphql-request';
 
 const graphqlAPI = process.env.NEXT_PUBLIC_GRAPHCMS_ENDPOINT;
 const token = process.env.TOKEN;
@@ -7,6 +7,9 @@ const client = new GraphQLClient(graphqlAPI, {
     Authorization: `Bearer ${token}`,
   },    
 });
+
+// console.log(token);
+// console.log(graphqlAPI);
 
 export const getPosts = async () => {
   const query = gql`
@@ -46,21 +49,6 @@ export const getPosts = async () => {
   return result.postsConnection.edges;
 };
 
-// export const getCategories = async () => {
-//   const query = gql`
-//     query GetGategories {
-//         categories {
-//           name
-//           slug
-//         }
-//     }
-//   `;
-
-//   const result = await request(graphqlAPI, query);
-
-//   return result.categories;
-// };
-
 // export const getPostDetails = async (slug) => {
 //   const query = gql`
 //     query GetPostDetails($slug : String!) {
@@ -90,31 +78,92 @@ export const getPosts = async () => {
 //     }
 //   `;
 
-//   const result = await request(graphqlAPI, query, { slug });
+//   // const result = await request(graphqlAPI, query, { slug });
+//   const result = await client.request(query, { slug })
 
 //   return result.post;
 // };
 
-// export const getSimilarPosts = async (categories, slug) => {
+export const getRecentPosts = async () => {
+  const query = gql`
+    query GetRecentPosts {
+      posts(orderBy: createdAt_DESC, first: 3) {
+        title
+        featuredImage {
+          url
+        }
+        createdAt
+        slug
+      }
+    }
+  `;
+  const result = await client.request(query);
+  // console.log(result)
+  return result.posts;
+};
+
+// export const getRecentPosts = async () => {
 //   const query = gql`
-//     query GetPostDetails($slug: String!, $categories: [String!]) {
-//       posts(
-//         where: {slug_not: $slug, AND: {categories_some: {slug_in: $categories}}}
-//         last: 3
-//       ) {
-//         title
-//         featuredImage {
-//           url
+//     query GetRecentPosts {
+//       postsConnection(orderBy: createdAt_DESC, first: 3) {
+//         edges {
+//           node {
+//             title
+//             slug
+//             featuredImage {
+//               url
+//             }
+//             createdAt
+//           }
 //         }
-//         createdAt
-//         slug
 //       }
 //     }
 //   `;
-//   const result = await request(graphqlAPI, query, { slug, categories });
-
-//   return result.posts;
+//   const result = await client.request(query);
+//   return result.postsConnection.edges.map(edge => edge.node);
 // };
+
+export const getSimilarPosts = async (categories, slug) => {
+  const query = gql`
+    query GetPostDetails($slug: String!, $categories: [String!]) {
+      posts(
+        where: { slug_not: $slug, AND: { categories_some: { slug_in: $categories } } }
+        last: 3
+      ) {
+        title
+        featuredImage {
+          url
+        }
+        createdAt
+        slug
+      }
+    }
+  `;
+  const result = await client.request(query, { slug, categories });
+  console.log(result)
+  return result.posts;
+};
+
+
+
+// export const getCategories = async () => {
+//   const query = gql`
+//     query GetGategories {
+//         categories {
+//           name
+//           slug
+//         }
+//     }
+//   `;
+
+//   const result = await request(graphqlAPI, query);
+
+//   return result.categories;
+// };
+
+
+
+
 
 // export const getAdjacentPosts = async (createdAt, slug) => {
 //   const query = gql`
@@ -241,23 +290,4 @@ export const getPosts = async () => {
 //   return result.comments;
 // };
 
-// export const getRecentPosts = async () => {
-//   const query = gql`
-//     query GetPostDetails() {
-//       posts(
-//         orderBy: createdAt_ASC
-//         last: 3
-//       ) {
-//         title
-//         featuredImage {
-//           url
-//         }
-//         createdAt
-//         slug
-//       }
-//     }
-//   `;
-//   const result = await request(graphqlAPI, query);
 
-//   return result.posts;
-// };

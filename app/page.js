@@ -1,12 +1,14 @@
 import Head from 'next/head'
 import { PostCard, PostWidget, Categories } from "@/components";
-import { getPosts } from '../Services';
+import { getPosts, getRecentPosts, getSimilarPosts } from '../services';
 
 const Home = async () => {
   let posts = [];
+  let recent = [];
   try {
     posts = await getPosts();
-    console.log(posts)
+    recent = await getSimilarPosts();
+    // console.log(recent)
   } catch (error) {
     console.error('Error fetching posts:', error);
   }
@@ -24,7 +26,7 @@ const Home = async () => {
         </div>
         <div className="lg:col-span-4 col-span-1">
           <div className="lg:sticky relative top-8">
-            <PostWidget />
+            <PostWidget posts/>
             <Categories />
           </div>
         </div>
@@ -34,3 +36,4 @@ const Home = async () => {
 };
 
 export default Home;
+
